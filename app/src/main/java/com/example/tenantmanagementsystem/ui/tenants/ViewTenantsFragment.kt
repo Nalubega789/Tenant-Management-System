@@ -1,4 +1,3 @@
-
 package com.example.tenantmanagementsystem.ui.tenants
 
 import android.content.Intent
@@ -24,11 +23,7 @@ class ViewTenantsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentViewTenantsBinding.inflate(
-            inflater,
-            container,
-            false
-        )
+        _binding = FragmentViewTenantsBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -36,31 +31,28 @@ class ViewTenantsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val newTenant = args.newTenant
-
         binding.tenant = newTenant
 
+        // Show or hide the new tenant section based on whether we came from add tenant
         if (newTenant == null) {
             binding.newTenantGroup.visibility = View.GONE
         } else {
             binding.newTenantGroup.visibility = View.VISIBLE
         }
 
+        // Display all tenants from repository
         val tenants = TenantRepository.tenants
 
         if (tenants.isEmpty()) {
-            binding.allTenantsTextView.text =
-                "No tenants yet. Add one from the Dashboard."
+            binding.allTenantsTextView.text = "No tenants yet. Add one from the Dashboard."
         } else {
-            binding.allTenantsTextView.text =
-                tenants.joinToString("\n\n") { it.summary() }
+            binding.allTenantsTextView.text = tenants.joinToString("\n\n") { it.summary() }
         }
 
+        // Handle call button click for the newly added tenant
         binding.callButton.setOnClickListener {
             if (newTenant != null) {
-                val intent = Intent(
-                    Intent.ACTION_DIAL,
-                    Uri.parse("tel:${newTenant.phone}")
-                )
+                val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:${newTenant.phone}"))
                 startActivity(intent)
             }
         }

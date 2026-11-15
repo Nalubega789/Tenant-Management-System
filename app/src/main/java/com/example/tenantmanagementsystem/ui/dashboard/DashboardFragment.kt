@@ -34,17 +34,20 @@ class DashboardFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         Log.d("TENANT_LIFECYCLE", "DashboardFragment: onViewCreated")
 
+        // Pull current tenant count and total rent from repository
         val tenantCount = TenantRepository.tenants.size
         val totalRent = TenantRepository.totalRent()
 
         binding.tenantCountTextView.text = "Tenants\n$tenantCount"
         binding.totalRentTextView.text = "Total rent\nKSh %.0f".format(totalRent)
 
+        // Navigate to Add Tenant screen
         binding.addTenantButton.setOnClickListener {
             val action = DashboardFragmentDirections.actionDashboardFragmentToAddTenantFragment()
             findNavController().navigate(action)
         }
 
+        // Navigate to View Tenants screen
         binding.viewTenantsButton.setOnClickListener {
             val action = DashboardFragmentDirections.actionDashboardFragmentToViewTenantsFragment()
             findNavController().navigate(action)

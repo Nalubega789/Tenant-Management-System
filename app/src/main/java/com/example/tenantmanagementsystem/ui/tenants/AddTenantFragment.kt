@@ -33,14 +33,17 @@ class AddTenantFragment : Fragment() {
             val phone = binding.phoneEditText.text.toString().trim()
             val rent = binding.rentEditText.text.toString().trim()
 
+            // Validate that all fields are filled before saving
             if (name.isEmpty() || phone.isEmpty() || rent.isEmpty()) {
                 Toast.makeText(requireContext(), "Please fill in all fields", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
+            // Create tenant object and store in repository
             val tenant = Tenant(name, phone, rent)
             TenantRepository.addTenant(tenant)
 
+            // Pass the newly created tenant via Safe Args to view screen
             val action = AddTenantFragmentDirections
                 .actionAddTenantFragmentToViewTenantsFragment(tenant)
             findNavController().navigate(action)
