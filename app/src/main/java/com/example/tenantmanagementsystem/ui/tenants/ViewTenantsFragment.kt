@@ -7,14 +7,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.navArgs
-import com.example.tenantmanagementsystem.data.repository.TenantRepository
 import com.example.tenantmanagementsystem.databinding.FragmentViewTenantsBinding
+import com.example.tenantmanagementsystem.ui.viewmodel.TenantViewModel
 
 class ViewTenantsFragment : Fragment() {
 
     private var _binding: FragmentViewTenantsBinding? = null
     private val binding get() = _binding!!
+    private val viewModel: TenantViewModel by viewModels()
 
     private val args: ViewTenantsFragmentArgs by navArgs()
 
@@ -40,13 +42,9 @@ class ViewTenantsFragment : Fragment() {
             binding.newTenantGroup.visibility = View.VISIBLE
         }
 
-        // Display all tenants from repository
-        val tenants = TenantRepository.tenants
-
-        if (tenants.isEmpty()) {
-            binding.allTenantsTextView.text = "No tenants yet. Add one from the Dashboard."
-        } else {
-            binding.allTenantsTextView.text = tenants.joinToString("\n\n") { it.summary() }
+        // Observe all tenants from ViewModel LiveData (decoupled from Repository)
+        viewModel.allTenantsText.observe(viewLifecycleOwner) { text ->
+            binding.allTenantsTextView.text = text
         }
 
         // Handle call button click for the newly added tenant

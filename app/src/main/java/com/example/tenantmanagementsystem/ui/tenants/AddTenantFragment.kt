@@ -6,15 +6,16 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import com.example.tenantmanagementsystem.data.model.Tenant
-import com.example.tenantmanagementsystem.data.repository.TenantRepository
 import com.example.tenantmanagementsystem.databinding.FragmentAddTenantBinding
+import com.example.tenantmanagementsystem.ui.viewmodel.TenantViewModel
 
 class AddTenantFragment : Fragment() {
 
     private var _binding: FragmentAddTenantBinding? = null
     private val binding get() = _binding!!
+    private val viewModel: TenantViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -29,19 +30,17 @@ class AddTenantFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.saveButton.setOnClickListener {
-            val name = binding.tenantNameEditText.text.toString().trim()
-            val phone = binding.phoneEditText.text.toString().trim()
-            val rent = binding.rentEditText.text.toString().trim()
+            val name = binding.tenantNameEditText.text.toString()
+            val phone = binding.phoneEditText.text.toString()
+            val rent = binding.rentEditText.text.toString()
 
-            // Validate that all fields are filled before saving
-            if (name.isEmpty() || phone.isEmpty() || rent.isEmpty()) {
+            // Delegate adding tenant to ViewModel (decoupled from Repository)
+            val tenant = viewModel.addTenant(name, phone, rent)
+
+            if (tenant == null) {
                 Toast.makeText(requireContext(), "Please fill in all fields", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-
-            // Create tenant object and store in repository
-            val tenant = Tenant(name, phone, rent)
-            TenantRepository.addTenant(tenant)
 
             // Pass the newly created tenant via Safe Args to view screen
             val action = AddTenantFragmentDirections
