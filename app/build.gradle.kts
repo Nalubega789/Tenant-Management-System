@@ -15,6 +15,8 @@ android {
         dataBinding = true
     }
     defaultConfig {
+        versionCode = 1
+        versionName = "1.0"
         applicationId = "com.example.tenantmanagementsystem"
         minSdk = 24
         targetSdk = 37
