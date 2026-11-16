@@ -1,85 +1,60 @@
-
 package com.example.tenantmanagementsystem.ui.viewmodel
 
+import android.app.Application
 import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
+import androidx.lifecycle.viewModelScope
+import com.example.tenantmanagementsystem.data.local.TenantDatabase
 import com.example.tenantmanagementsystem.data.model.Tenant
 import com.example.tenantmanagementsystem.data.repository.TenantRepository
+import kotlinx.coroutines.launch
 
-class TenantViewModel : ViewModel() {
+class TenantViewModel(application: Application) : AndroidViewModel(application) {
 
-    // Holds the list of tenants
-    private val _tenants = MutableLiveData<List<Tenant>>(
-        TenantRepository.tenants.toList()
-    )
+    private val repository = TenantRepository(TenantDatabase.getDatabase(application).tenantDao())
 
-    // Public read-only tenant list
-    val tenants: LiveData<List<Tenant>> = _tenants
+    val tenants: LiveData<List<Tenant>> = repository.tenants
 
-    // Calculates the number of tenants
     val tenantCountText: LiveData<String> = tenants.map { list ->
         "Tenants\n${list.size}"
     }
 
-    // Calculates total rent
     val totalRentText: LiveData<String> = tenants.map { list ->
-        val total = list.sumOf {
-            it.rent.toDoubleOrNull() ?: 0.0
-        }
-
-        "Total rent\nKSh %,.0f".format(total)
+        val total = list.sumOf { it.rent.toDoubleOrNull() ?: 0.0 }
+        "Total rent\nKSh %.0f".format(total)
     }
 
-    // Displays all tenant information
     val allTenantsText: LiveData<String> = tenants.map { list ->
-        if (list.isEmpty()) {
-            "No tenants yet. Add one from the Dashboard."
-        } else {
-            list.joinToString("\n\n") { it.summary() }
-        }
+        if (list.isEmpty()) "No tenants yet. Add one from the Dashboard."
+        else list.joinToString("\n\n") { it.summary() }
     }
 
-    // Adds a new tenant
-    fun addTenant(
-        name: String,
-        phone: String,
-        rent: String
-    ): Tenant? {
-
+    fun addTenant(name: String, phone: String, rent: String): Tenant? {
         val cleanName = name.trim()
         val cleanPhone = phone.trim()
         val cleanRent = rent.trim()
 
-        if (cleanName.isEmpty() ||
-            cleanPhone.isEmpty() ||
-            cleanRent.isEmpty()
-        ) {
+        if (cleanName.isEmpty() || cleanPhone.isEmpty() || cleanRent.isEmpty()) {
             return null
         }
 
-        val tenant = Tenant(
-            name = cleanName,
-            phone = cleanPhone,
-            rent = cleanRent
-        )
+        val tenant = Tenant(cleanName, cleanPhone, cleanRent)
 
-        TenantRepository.addTenant(tenant)
-
-        // Refreshes the observable tenant list
-        _tenants.value = TenantRepository.tenants.toList()
+        viewModelScope.launch {
+            repository.addTenant(tenant)
+        }
 
         return tenant
     }
 
     init {
-        Log.d("TenantViewModel", "ViewModel created")
+        Log.d("TENANT_LIFECYCLE", "TenantViewModel: created")
     }
 
     override fun onCleared() {
         super.onCleared()
-        Log.d("TenantViewModel", "ViewModel cleared")
+        Log.d("TENANT_LIFECYCLE", "TenantViewModel: onCleared")
     }
 }
